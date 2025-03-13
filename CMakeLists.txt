@@ -28,7 +28,9 @@ configure_file(include/hyacinth/version.h.in ${PROJECT_SOURCE_DIR}/include/hyaci
 # ---------------------------------------------------------
 
 find_package(boost_date_time CONFIG REQUIRED)
+find_package(boost_chrono CONFIG REQUIRED)
 find_package(boost_algorithm CONFIG REQUIRED)
+find_package(boost_filesystem CONFIG REQUIRED)
 find_package(boost_property_tree CONFIG REQUIRED)
 find_package(boost_log CONFIG REQUIRED)
 find_package(boost_program_options CONFIG REQUIRED)
@@ -45,7 +47,7 @@ add_executable(hyacinth ${SOURCE_LIST})
 set_target_properties(hyacinth PROPERTIES LINK_FLAGS_RELEASE -s)
 
 target_link_libraries(hyacinth PRIVATE
-  Boost::program_options Boost::log Boost::property_tree Boost::date_time Boost::algorithm
+  Boost::program_options Boost::log Boost::property_tree Boost::date_time Boost::chrono Boost::algorithm Boost::filesystem
   pantor::inja
   PostgreSQL::PostgreSQL unofficial::libmariadb unofficial::sqlite3::sqlite3
 )
