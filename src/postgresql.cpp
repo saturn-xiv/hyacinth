@@ -14,14 +14,104 @@ std::string hyacinth::PostgreSql::uri() {
   return ss.str();
 }
 void hyacinth::PostgreSql::migrate(const Migration& it) {
-  BOOST_LOG_TRIVIAL(info) << "migrate " << it.version << " " << it.name;
-  BOOST_LOG_TRIVIAL(debug) << it.up;
-  // TODO
+  const auto con = this->open();
+
+  auto res = PQexec(con->db, "BEGIN");
+  if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+    std::stringstream ss;
+    ss << "BEGIN command failed: " << PQerrorMessage(con->db);
+    PQclear(res);
+    throw std::runtime_error(ss.str());
+  }
+  PQclear(res);
+
+  {
+    res = PQexec(con->db, it.up.c_str());
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      std::stringstream ss;
+      ss << PQerrorMessage(con->db);
+      PQclear(res);
+      throw std::runtime_error(ss.str());
+    }
+    PQclear(res);
+  }
+
+  {
+    const std::string tpl =
+        R"SQL(UPDATE {{ table }} SET version=version+1, run_at=CURRENT_TIMESTAMP WHERE id=$1)SQL";
+
+    nlohmann::json data = {{"table", this->_migrations_table}};
+    const std::string sql = inja::render(tpl, data);
+
+    BOOST_LOG_TRIVIAL(debug) << sql;
+
+    const auto id = std::to_string(it.version);
+    const char* const param_values[] = {id.c_str()};
+    const int param_lengths[] = {sizeof(id.c_str())};
+    const int param_formats[] = {0};
+    res = PQexecParams(con->db, sql.c_str(), 1, NULL, param_values,
+                       param_lengths, param_formats, 0);
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      std::stringstream ss;
+      ss << PQerrorMessage(con->db);
+      PQclear(res);
+      throw std::runtime_error(ss.str());
+    }
+    PQclear(res);
+  }
+
+  res = PQexec(con->db, "END");
+  PQclear(res);
 }
 void hyacinth::PostgreSql::rollback(const Migration& it) {
-  BOOST_LOG_TRIVIAL(info) << "rollback " << it.version << " " << it.name;
-  BOOST_LOG_TRIVIAL(debug) << it.down;
-  // TODO
+  const auto con = this->open();
+
+  auto res = PQexec(con->db, "BEGIN");
+  if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+    std::stringstream ss;
+    ss << "BEGIN command failed: " << PQerrorMessage(con->db);
+    PQclear(res);
+    throw std::runtime_error(ss.str());
+  }
+  PQclear(res);
+
+  {
+    res = PQexec(con->db, it.down.c_str());
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      std::stringstream ss;
+      ss << PQerrorMessage(con->db);
+      PQclear(res);
+      throw std::runtime_error(ss.str());
+    }
+    PQclear(res);
+  }
+
+  {
+    const std::string tpl =
+        R"SQL(UPDATE {{ table }} SET version=version+1, run_at=NULL WHERE id=$1)SQL";
+
+    nlohmann::json data = {{"table", this->_migrations_table}};
+    const std::string sql = inja::render(tpl, data);
+
+    BOOST_LOG_TRIVIAL(debug) << sql;
+
+    const auto id = std::to_string(it.version);
+    const char* const param_values[] = {id.c_str()};
+    const int param_lengths[] = {sizeof(id.c_str())};
+    const int param_formats[] = {0};
+    res = PQexecParams(con->db, sql.c_str(), 1, NULL, param_values,
+                       param_lengths, param_formats, 0);
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+      std::stringstream ss;
+      ss << PQerrorMessage(con->db);
+      PQclear(res);
+      throw std::runtime_error(ss.str());
+    }
+    PQclear(res);
+  }
+
+  res = PQexec(con->db, "END");
+  PQclear(res);
 }
 std::string hyacinth::PostgreSql::create() {
   const std::string tpl = R"RAW(

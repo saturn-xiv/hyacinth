@@ -156,6 +156,8 @@ void hyacinth::Application::launch(int argc, char* argv[]) {
       if (it.run_at) {
         continue;
       }
+      BOOST_LOG_TRIVIAL(info) << "migrate " << it.version << " " << it.name;
+      BOOST_LOG_TRIVIAL(debug) << it.up;
       engine->migrate(it);
     }
     return;
@@ -168,6 +170,8 @@ void hyacinth::Application::launch(int argc, char* argv[]) {
     });
     for (const auto& it : items) {
       if (it.run_at) {
+        BOOST_LOG_TRIVIAL(info) << "rollback " << it.version << " " << it.name;
+        BOOST_LOG_TRIVIAL(debug) << it.down;
         engine->rollback(it);
         return;
       }
