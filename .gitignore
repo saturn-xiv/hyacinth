@@ -2,3 +2,4 @@
 /build/
 /include/hyacinth/version.hpp
 /CMakeUserPresets.json
+/config.ini

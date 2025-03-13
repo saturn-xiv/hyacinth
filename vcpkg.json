@@ -2,6 +2,10 @@
   "dependencies": [
     "boost-log",
     "boost-program-options",
+    "boost-property-tree",
+    "boost-date-time",
+    "boost-algorithm",
+    "inja",
     "libpq",
     "libmariadb",
     "sqlite3"
