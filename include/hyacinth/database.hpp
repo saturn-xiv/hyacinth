@@ -5,7 +5,7 @@
 #include <boost/log/trivial.hpp>
 
 #include <mysql/mysql.h>
-#include <pgsql/libpq-fe.h>
+#include <libpq-fe.h>
 #include <sqlite3.h>
 
 namespace hyacinth {

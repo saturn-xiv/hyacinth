@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "boost-log",
+    "boost-program-options",
+    "libpq",
+    "libmariadb",
+    "sqlite3"
+  ]
+}

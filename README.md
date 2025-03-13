@@ -4,5 +4,6 @@
 
 ```bash
 $ ./docker/start.sh
-> xmake
+> cmake --preset=default -DVCPKG_BUILD_TYPE=release
+> cmake --build build
 ```
