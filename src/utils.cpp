@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/log/trivial.hpp>
 
@@ -33,4 +34,23 @@ void hyacinth::load(const boost::filesystem::path& f, std::string& s) {
   std::size_t size = static_cast<std::size_t>(boost::filesystem::file_size(f));
   s.resize(size, '\0');
   file.read(&s[0], size);
+}
+
+std::string hyacinth::execute(const std::vector<std::string> args) {
+  const std::string command = boost::algorithm::join(args, " ");
+  BOOST_LOG_TRIVIAL(debug) << "call: " << command;
+  std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
+  if (!pipe) {
+    throw std::runtime_error("couldn't open pipe");
+  };
+  char buffer[128];
+  std::stringstream ss;
+  while (!feof(pipe.get())) {
+    if (fgets(buffer, 128, pipe.get()) != nullptr) {
+      ss << buffer;
+    }
+  }
+  const auto out = ss.str();
+  BOOST_LOG_TRIVIAL(debug) << out;
+  return out;
 }

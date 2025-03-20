@@ -35,7 +35,7 @@ class Driver {
   virtual std::string create() = 0;
   virtual std::string drop() = 0;
   virtual std::vector<Migration> status() = 0;
-  virtual std::string dump() = 0;
+  virtual void dump() = 0;
   virtual std::string restore() = 0;
   virtual std::pair<std::string, std::string> generate() = 0;
   virtual std::optional<Migration> get_migration(uint64_t version) = 0;
@@ -88,7 +88,7 @@ class PostgreSql : public Driver {
   std::string create() override;
   std::string drop() override;
   std::vector<Migration> status() override;
-  std::string dump() override;
+  void dump() override;
   std::string restore() override;
   std::pair<std::string, std::string> generate() override;
   std::optional<Migration> get_migration(uint64_t version) override;

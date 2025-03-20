@@ -3,3 +3,4 @@
 /build/
 /include/hyacinth/version.hpp
 /config.ini
+/*.gz

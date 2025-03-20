@@ -179,18 +179,27 @@ std::vector<hyacinth::Migration> hyacinth::PostgreSql::status() {
   PQclear(res);
   return items;
 }
-std::string hyacinth::PostgreSql::dump() {
-  const std::string tpl = R"RAW(
-$ pg_dump -f {{ file }} -F custom --compress=9 -O -h {{ host }} -p {{ port }} -U {{ user }} -W {{ password }} -d {{ db_name }}
-)RAW";
-  nlohmann::json data = {
-      {"host", this->_host},
-      {"port", this->_port},
-      {"user", this->_user},
-      {"password", this->_password.value_or("")},
-      {"db_name", this->_db_name},
-      {"file", this->_db_name + "-" + hyacinth::timestamp() + ".gz"}};
-  return inja::render(tpl, data);
+void hyacinth::PostgreSql::dump() {
+  const auto file = this->_db_name + "-" + hyacinth::timestamp() + ".gz";
+  BOOST_LOG_TRIVIAL(info) << "dump " << this->_host << ":" << this->_port << "/"
+                          << this->_db_name << " into " << file;
+  std::vector<std::string> args = {"pg_dump", "-f",     file,
+                                   "-F",      "custom", "--compress",
+                                   "9",       "-O",     "--no-owner"};
+
+  {
+    std::stringstream ss;
+    {
+      ss << "postgresql://" << this->_user;
+      if (this->_password) {
+        ss << ":" << this->_password.value();
+      }
+      ss << "@" << this->_host << ":" << this->_port << "/" << this->_db_name;
+    }
+    args.push_back("-d");
+    args.push_back(ss.str());
+  }
+  hyacinth::execute(args);
 }
 
 std::string hyacinth::PostgreSql::restore() {

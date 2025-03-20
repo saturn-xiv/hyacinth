@@ -123,7 +123,7 @@ void hyacinth::Application::launch(int argc, char* argv[]) {
     return;
   }
   if (vm.count("dump")) {
-    std::cout << engine->dump() << std::endl;
+    engine->dump();
     return;
   }
   if (vm.count("create")) {

@@ -17,4 +17,5 @@ inline std::string timestamp() {
 void render(const boost::filesystem::path& file, const std::string& tpl,
             const nlohmann::json& data);
 void load(const boost::filesystem::path& f, std::string& s);
+std::string execute(const std::vector<std::string> args);
 }  // namespace hyacinth
